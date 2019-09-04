@@ -1,0 +1,29 @@
+{
+  "name": "se-search-execution-function",
+  "version": "1.0.0",
+  "description": "Search and find new deals that matched the buyer needs",
+  "main": "app.js",
+  "scripts": {
+    "start": "pm2 start --name search-execute ./app.js -i 1",
+    "start:dev": "nodemon ./app.js",
+    "package": "rm -rf dist && mkdir dist && npm run package-prepare",
+    "package-prepare": "cp -r aws common config model service dist/ && cp package.json dist/ && cp index.js dist/ && cp app.js dist/ && cd dist && npm install --production && 7z a package.zip .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "nihon-ma@nihon-ma.git.backlog.com:/AWSRECOMMEND/se-search-execution-function.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.471.0",
+    "csvtojson": "2.0.10",
+    "json2csv": "4.5.2",
+    "sqs-consumer": "5.3.0",
+    "winston": "3.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "1.19.2"
+  }
+}
