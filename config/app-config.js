@@ -16,6 +16,10 @@ const configureApp = async () => {
  * Load environment variables from AWS SSM
  */
 const loadEnvironmentVariables = async () => {
+  if (!PROFILE) {
+    throw new Error("PROFILE environment variable is not configured. Returning error.");
+  }
+
   const path = `${FUNCTION_NAME_PATH}${PROFILE}/`;
 
   let req = {
