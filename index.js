@@ -4,6 +4,7 @@ const log = require("./common/logger");
 
 const s3Service = require("./aws/s3-service");
 const needService = require("./service/need-service");
+const ERROR_KEYWORD = "ERROR";
 
 /** Main processing function */
 module.exports.processMessage = async function processMessage(message) {
@@ -34,7 +35,7 @@ module.exports.processMessage = async function processMessage(message) {
     return utils.buildResponse(200, "Success!");
   } catch (e) {
     if (e instanceof InputValidationError || e instanceof NoSuchKeyError) {
-      log.error(e);
+      log.error(`${ERROR_KEYWORD}: `, e);
       return utils.buildResponse(500, e.message);
     }
 
