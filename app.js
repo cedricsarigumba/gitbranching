@@ -5,7 +5,7 @@ const app = require("./index");
 const constants = require("./common/constants");
 const log = require("./common/logger");
 
-const SE_SEARCH_EXCTN_FXN_ERROR = "SeSearchExecutionFunctionError";
+const ERROR_KEYWORD = "ERROR";
 
 (async function() {
   let sqsListener;
@@ -14,10 +14,11 @@ const SE_SEARCH_EXCTN_FXN_ERROR = "SeSearchExecutionFunctionError";
     log.info("Starting application, loading environment configs..");
     await configureApp();
 
-    log.info("Starting sqs-polling..");
+    const QUEUE_URL = config["SE_SRCH_NEEDS_QUEUE"];
+    log.info(`Starting sqs-polling : ${QUEUE_URL}`);
 
     sqsListener = sqsConsumer.create({
-      queueUrl: config["SE_SRCH_NEEDS_QUEUE"],
+      queueUrl: QUEUE_URL,
       region: constants.AWS_REGION,
       batchSize: config["QUEUE_BATCH_SIZE"],
       handleMessage: async message => app.processMessage(message)
@@ -25,12 +26,12 @@ const SE_SEARCH_EXCTN_FXN_ERROR = "SeSearchExecutionFunctionError";
 
     // sqs-polling configuration error
     sqsListener.on("error", err => {
-      log.error(`${SE_SEARCH_EXCTN_FXN_ERROR}: `, err);
+      log.error(`${ERROR_KEYWORD}: `, err);
     });
 
     // business logic error
     sqsListener.on("processing_error", err => {
-      log.error(`${SE_SEARCH_EXCTN_FXN_ERROR}: `, err);
+      log.error(`${ERROR_KEYWORD}: `, err);
     });
 
     sqsListener.on("stopped", err => {
@@ -41,6 +42,6 @@ const SE_SEARCH_EXCTN_FXN_ERROR = "SeSearchExecutionFunctionError";
   } catch (e) {
     if (sqsListener) sqsListener.stop();
 
-    log.error(`${SE_SEARCH_EXCTN_FXN_ERROR}: `, e);
+    log.error(`${ERROR_KEYWORD}: `, e);
   }
 })();
