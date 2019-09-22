@@ -55,7 +55,7 @@ const splitStringToArray = (phrase, separator = ",") => phrase.split(separator);
 
 const constructCsvPayload = arr => arr.map(deal => deal.toCsvItem());
 
-const isElementExist = (arr, e) => arr.indexOf(e) !== -1;
+const isElementExist = (arr, e) => !isEmptyString(e) && arr.indexOf(e) !== -1;
 
 const stringToBool = phrase => phrase.toLowerCase() == "true";
 
