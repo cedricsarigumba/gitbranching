@@ -21,17 +21,8 @@ class S3PutObjectError extends Error {
   }
 }
 
-class DynamoDBInternalServerError extends Error {
-  constructor(message, cause) {
-    super(message);
-    this.cause = cause;
-    this.name = this.constructor.name;
-  }
-}
-
 module.exports = {
   InputValidationError,
   NoSuchKeyError,
-  S3PutObjectError,
-  DynamoDBInternalServerError
+  S3PutObjectError
 };

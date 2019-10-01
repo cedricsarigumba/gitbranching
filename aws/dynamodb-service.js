@@ -4,15 +4,17 @@ const { config } = require("../config/app-config");
 const log = require("../common/logger");
 const constants = require("../common/constants");
 const utils = require("../common/utils");
-const { DynamoDBInternalServerError } = require("../common/custom-error");
 
 AWS.config.update({ region: constants.AWS_REGION });
 let ddb = new AWS.DynamoDB.DocumentClient(constants.AWS_DYNAMODB_VERSION);
 
+const ERROR_KEYWORD = "ERROR";
 const DB_PARTITION_KEY = "buying_needs_id";
 const DB_BATCH_LIMIT = 25;
 const DB_OPERATION_PUT = "PutRequest";
 const DB_OPERATION_DELETE = "DeleteRequest";
+const DB_BATCH_WRITE_MAX_RETRY = 5;
+const DB_RETRY_DELAY_IN_MS = 1000;
 
 /** Retrieve the existing deals records of this buyingNeed by partitionKey */
 async function getDealsByPartitionKey(buyingNeedId) {
@@ -37,7 +39,7 @@ async function getDealsByPartitionKey(buyingNeedId) {
 
 /** Insert ${deals} in database */
 async function saveDeals(deals) {
-  await executeBatchWrite(deals, DB_OPERATION_PUT);
+  await putItemsToDatabase(deals, DB_OPERATION_PUT);
 }
 
 /**
@@ -45,23 +47,54 @@ async function saveDeals(deals) {
  * Called if there are exceptions during the execution of S3.putObject.
  */
 async function deleteDeals(deals) {
-  await executeBatchWrite(deals, DB_OPERATION_DELETE);
+  await putItemsToDatabase(deals, DB_OPERATION_DELETE);
 }
 
-/** Execute DynamoDb.BatchWrite operation. If there are unprocessedItems (Internal server error) then throw exception */
-const executeBatchWrite = async function(deals, operation) {
+/** Execute DynamoDb.BatchWrite operation*/
+const putItemsToDatabase = async function(deals, operation) {
   let chunkNewDeals = utils.splitArrayIntoChunks(deals, DB_BATCH_LIMIT);
 
   log.debug(`${operation} total: [${deals[0].needsId}] : ${deals.length}`);
 
   for (var i = 0, len = chunkNewDeals.length; i < len; i++) {
-    let params = buildDbPayload(chunkNewDeals[i], operation);
-    let batchWriteResp = await ddb.batchWrite(params).promise();
-    if (Object.keys(batchWriteResp.UnprocessedItems).length > 0) {
-      throw new DynamoDBInternalServerError(
-        `DB Error during ${operation}: UnprocessedItems : ${JSON.stringify(batchWriteResp.UnprocessedItems)}`
-      );
+    let batchWriteItems = buildDbPayload(chunkNewDeals[i], operation);
+    await executeBatchWrite(batchWriteItems);
+  }
+};
+
+const executeBatchWrite = async function(batchWriteItems) {
+  let unprocessedItemsExist = true;
+  let retryCounter = 0;
+  let batchWriteResponse = "";
+
+  do {
+    const batchWritePayload = { RequestItems: batchWriteItems };
+    batchWriteResponse = await ddb.batchWrite(batchWritePayload).promise();
+
+    if (areThereUnprocessedItems(batchWriteResponse)) {
+      batchWriteItems = batchWriteResponse.UnprocessedItems;
+      retryCounter++;
+
+      await waitBeforeTriggeringRetry();
+    } else {
+      unprocessedItemsExist = false;
     }
+  } while (unprocessedItemsExist && retryCounter < DB_BATCH_WRITE_MAX_RETRY);
+
+  logIfRetryLimitReached(retryCounter, batchWriteResponse);
+};
+
+const areThereUnprocessedItems = function(batchWriteResponse) {
+  return Object.keys(batchWriteResponse.UnprocessedItems).length > 0;
+};
+
+const waitBeforeTriggeringRetry = async function() {
+  await new Promise(resolve => setTimeout(resolve, DB_RETRY_DELAY_IN_MS));
+};
+
+const logIfRetryLimitReached = function(retryCounter, message) {
+  if (retryCounter === DB_BATCH_WRITE_MAX_RETRY) {
+    console.error(ERROR_KEYWORD, `DynamoDB Error: Retry Limit Reached : ${JSON.stringify(message.UnprocessedItems)}`);
   }
 };
 
@@ -90,11 +123,7 @@ const buildDbPayload = function(items, operation) {
     });
   }
 
-  return {
-    RequestItems: {
-      [config["DB_TABLE"]]: itemsObj
-    }
-  };
+  return { [config["DB_TABLE"]]: itemsObj };
 };
 
 module.exports = {
