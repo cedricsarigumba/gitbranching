@@ -20,6 +20,11 @@ const DB_SORTK = {
   DEAL: "_Deal"
 };
 
+const LOG_LEVEL = {
+  WARN: "WARN",
+  ERROR: "ERROR"
+};
+
 const SOBJECTS = {
   DEAL: "Deal__c",
   SEARCH_DEAL: "AWS_Search_Deal__c",
@@ -37,5 +42,6 @@ module.exports = Object.freeze({
   OUTSIDE_JAPAN,
   CANDIDATE_UNDECIDED,
   BEFORE_COMMISSIONING,
-  CASE
+  CASE,
+  LOG_LEVEL
 });

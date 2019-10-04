@@ -5,8 +5,6 @@ const app = require("./index");
 const constants = require("./common/constants");
 const log = require("./common/logger");
 
-const ERROR_KEYWORD = "ERROR";
-
 (async function() {
   let sqsListener;
 
@@ -26,12 +24,12 @@ const ERROR_KEYWORD = "ERROR";
 
     // sqs-polling configuration error
     sqsListener.on("error", err => {
-      log.error(`${ERROR_KEYWORD}: `, err);
+      log.error(`${constants.LOG_LEVEL.ERROR}: `, err);
     });
 
     // business logic error
     sqsListener.on("processing_error", err => {
-      log.error(`${ERROR_KEYWORD}: `, err);
+      log.error(`${constants.LOG_LEVEL.ERROR}: `, err);
     });
 
     sqsListener.on("stopped", err => {
@@ -42,6 +40,6 @@ const ERROR_KEYWORD = "ERROR";
   } catch (e) {
     if (sqsListener) sqsListener.stop();
 
-    log.error(`${ERROR_KEYWORD}: `, e);
+    log.error(`${constants.LOG_LEVEL.ERROR}: `, e);
   }
 })();
