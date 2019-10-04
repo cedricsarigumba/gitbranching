@@ -1,10 +1,10 @@
 const { InputValidationError, NoSuchKeyError } = require("./common/custom-error");
 const utils = require("./common/utils");
 const log = require("./common/logger");
+const { LOG_LEVEL } = require("./common/constants");
 
 const s3Service = require("./aws/s3-service");
 const needService = require("./service/need-service");
-const ERROR_KEYWORD = "ERROR";
 
 /** Main processing function */
 module.exports.processMessage = async function processMessage(message) {
@@ -35,7 +35,7 @@ module.exports.processMessage = async function processMessage(message) {
     return utils.buildResponse(200, "Success!");
   } catch (e) {
     if (e instanceof InputValidationError || e instanceof NoSuchKeyError) {
-      log.error(`${ERROR_KEYWORD}: `, e);
+      log.error(`${LOG_LEVEL.ERROR}: `, e);
       return utils.buildResponse(500, e.message);
     }
 

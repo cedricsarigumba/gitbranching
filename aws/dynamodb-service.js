@@ -8,7 +8,6 @@ const utils = require("../common/utils");
 AWS.config.update({ region: constants.AWS_REGION });
 let ddb = new AWS.DynamoDB.DocumentClient(constants.AWS_DYNAMODB_VERSION);
 
-const ERROR_KEYWORD = "ERROR";
 const DB_PARTITION_KEY = "buying_needs_id";
 const DB_BATCH_LIMIT = 25;
 const DB_OPERATION_PUT = "PutRequest";
@@ -73,6 +72,7 @@ const executeBatchWrite = async function(batchWriteItems) {
 
     if (areThereUnprocessedItems(batchWriteResponse)) {
       batchWriteItems = batchWriteResponse.UnprocessedItems;
+      log.warn(`${constants.LOG_LEVEL.WARN} Unprocessed Items : ${JSON.stringify(batchWriteItems)}`);
       retryCounter++;
 
       await waitBeforeTriggeringRetry();
@@ -94,7 +94,9 @@ const waitBeforeTriggeringRetry = async function() {
 
 const logIfRetryLimitReached = function(retryCounter, message) {
   if (retryCounter === DB_BATCH_WRITE_MAX_RETRY) {
-    console.error(ERROR_KEYWORD, `DynamoDB Error: Retry Limit Reached : ${JSON.stringify(message.UnprocessedItems)}`);
+    log.error(
+      `${constants.LOG_LEVEL.ERROR} DynamoDB Error: Retry Limit Reached : ${JSON.stringify(message.UnprocessedItems)}`
+    );
   }
 };
 
