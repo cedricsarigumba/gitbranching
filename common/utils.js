@@ -51,7 +51,7 @@ const toCsvString = (records, json2csvParser) => json2csvParser.parse(records);
 
 const getS3ObjFromMessage = message => JSON.parse(message.Body).Records[0].s3;
 
-const splitStringToArray = (phrase, separator = ",") => phrase.split(separator);
+const splitStringToArray = (phrase, separator = ",") => (!phrase || !phrase.trim() ? [] : phrase.split(separator));
 
 const constructCsvPayload = arr => arr.map(deal => deal.toCsvItem());
 
@@ -65,6 +65,8 @@ const isUndefined = obj => obj === undefined;
 const isEmptyString = value =>
   value === null || typeof value == "undefined" || (typeof value == "string" && !value.trim());
 
+const isNonEmptyArray = arr => arr != null && arr != undefined && arr.length;
+
 module.exports = {
   validateRequest,
   isUndefined,
@@ -75,5 +77,6 @@ module.exports = {
   constructCsvPayload,
   splitArrayIntoChunks,
   splitToCsvStrings,
-  stringToBool
+  stringToBool,
+  isNonEmptyArray
 };
