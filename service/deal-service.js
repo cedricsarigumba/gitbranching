@@ -5,7 +5,7 @@ const { ItemModel } = require("../model/item-model");
 const { config } = require("../config/app-config");
 
 /** Cross-check each deals if it matched the need buyingNeeds. If not match, disregard the deal */
-function findMatchedDeals(need, deals) {
+function findDealsUsingCurrentSearchFlow(need, deals) {
   const needPrefNames = utils.splitStringToArray(need.prefname__c, ";");
   const needCountryResidences = utils.splitStringToArray(need.countryresidence__c, ";");
   const needIndustries = utils.splitStringToArray(need.industry_small__c, ";");
@@ -82,7 +82,27 @@ const filterEligibleDeal = deal => {
   return { isEligibleForNeeds: nresp, isEligibleForDeals: dresp };
 };
 
+function findDealsUsingNewSearchFlow(need, deals) {
+  const needPrefNames = utils.splitStringToArray(need.prefname__c, ";");
+  const needCountryResidences = utils.splitStringToArray(need.countryresidence__c, ";");
+  const needIndustries = utils.splitStringToArray(need.desiredindustrysmall__c, ";");
+
+  return deals.filter(deal => {
+    let dealPrefname = deal.prefname__c;
+    if (
+      ((dealPrefname !== constants.OUTSIDE_JAPAN && utils.isElementExist(needPrefNames, dealPrefname)) ||
+        utils.isElementExist(needCountryResidences, deal.countryresidence__c)) &&
+      (utils.isElementExist(needIndustries, deal.industrysmall1__c) ||
+        utils.isElementExist(needIndustries, deal.industrysmall2__c) ||
+        utils.isElementExist(needIndustries, deal.industrysmall3__c))
+    ) {
+      return deal;
+    }
+  });
+}
+
 module.exports = {
-  findMatchedDeals,
-  findNewDeals
+  findDealsUsingCurrentSearchFlow,
+  findNewDeals,
+  findDealsUsingNewSearchFlow
 };
