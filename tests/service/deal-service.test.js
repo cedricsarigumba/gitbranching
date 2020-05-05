@@ -154,41 +154,7 @@ beforeAll(async () => {
   dealService = require("../../service/deal-service");
 });
 
-describe("findDealsUsingCurrentSearchFlow", () => {
-  test("Has matched deals: Should return the matched deals", () => {
-    const MOCK_DEALS = [
-      {
-        prefname__c: "prefname__c",
-        countryresidence__c: "countryresidence__c",
-        industry_small__c: "industry_small__c",
-      },
-    ];
-    const MOCK_NEED = {
-      prefname__c: "prefname__c",
-      countryresidence__c: "countryresidence__c",
-      industry_small__c: "industry_small__c",
-    };
-    expect(dealService.findDealsUsingCurrentSearchFlow(MOCK_NEED, MOCK_DEALS)).toStrictEqual(MOCK_DEALS);
-  });
-
-  test("Has no matched deals: Should return the empty deals", () => {
-    const MOCK_DEALS = [
-      {
-        prefname__c: "prefname__c",
-        countryresidence__c: "countryresidence__c",
-        industry_small__c: "industry_small__c",
-      },
-    ];
-    const MOCK_NEED = {
-      prefname__c: "prefname__c1",
-      countryresidence__c: "countryresidence__c1",
-      industry_small__c: "industry_small__c1",
-    };
-    expect(dealService.findDealsUsingCurrentSearchFlow(MOCK_NEED, MOCK_DEALS)).toStrictEqual([]);
-  });
-});
-
-describe("findDealsUsingNewSearchFlow", () => {
+describe("findMatchedDeals", () => {
   test("Has matched deals: Should return the matched deals", () => {
     const MOCK_DEALS = [
       {
@@ -204,7 +170,7 @@ describe("findDealsUsingNewSearchFlow", () => {
       countryresidence__c: "countryresidence__c",
       desiredindustrysmall__c: "industry_small__c",
     };
-    expect(dealService.findDealsUsingNewSearchFlow(MOCK_NEED, MOCK_DEALS)).toStrictEqual(MOCK_DEALS);
+    expect(dealService.findMatchedDeals(MOCK_NEED, MOCK_DEALS)).toStrictEqual(MOCK_DEALS);
   });
 
   test("Has no matched deals: Should return the empty deals", () => {
@@ -236,7 +202,7 @@ describe("findDealsUsingNewSearchFlow", () => {
       countryresidence__c: "countryresidence__c1",
       desiredindustrysmall__c: "industry_small__c1",
     };
-    expect(dealService.findDealsUsingNewSearchFlow(MOCK_NEED, MOCK_DEALS)).toStrictEqual([]);
+    expect(dealService.findMatchedDeals(MOCK_NEED, MOCK_DEALS)).toStrictEqual([]);
   });
 });
 
