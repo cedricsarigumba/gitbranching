@@ -23,7 +23,7 @@ async function processBuyingNeeds(buyingNeeds, deals, dateDir) {
 
         if (!newDeals.length) {
           // do nothing. no new deals to process for this buyingNeed
-          log.debug(`No newDeals for buyingNeed [${need.id}], skipping..`);
+          log.info(`No newDeals for buyingNeed [${need.id}], skipping..`);
           continue;
         }
 
