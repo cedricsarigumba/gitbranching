@@ -22,14 +22,14 @@ describe("processBuyingNeeds", () => {
         id: "id1",
         industry_small__c: "industry_small__c1;industry_small__c2",
         prefname__c: "prefname__c1;prefname__c2",
-        countryresidence__c: "countryresidence__c1;countryresidence__c2"
+        countryresidence__c: "countryresidence__c1;countryresidence__c2",
       },
       {
         id: "id2",
         industry_small__c: "",
         prefname__c: "prefname__c1;prefname__c2",
-        countryresidence__c: "countryresidence__c1;countryresidence__c2"
-      }
+        countryresidence__c: "countryresidence__c1;countryresidence__c2",
+      },
     ];
 
     MOCK_DEALS = [
@@ -39,7 +39,7 @@ describe("processBuyingNeeds", () => {
         industry_small__c: "industry_small__c1",
         industrysmall1__c: "industry_small__c1",
         industrysmall2__c: "industry_small__c1",
-        industrysmall3__c: "industry_small__c1"
+        industrysmall3__c: "industry_small__c1",
       },
       {
         prefname__c: "prefname__c2",
@@ -47,8 +47,8 @@ describe("processBuyingNeeds", () => {
         industry_small__c: "industry_small__c2",
         industrysmall1__c: "industry_small__c2",
         industrysmall2__c: "industry_small__c2",
-        industrysmall3__c: "industry_small__c2"
-      }
+        industrysmall3__c: "industry_small__c2",
+      },
     ];
 
     MOCK_NEW_DEALS = [
@@ -63,11 +63,10 @@ describe("processBuyingNeeds", () => {
         "_Deal",
         { id: "dId2", ownerid: "dOwnerId2" },
         { id: "nId2", ownerid: "nOwnerId2", account__c: "account__c2" }
-      )
+      ),
     ];
 
-    mockDealService.findDealsUsingCurrentSearchFlow = jest.fn().mockReset();
-    mockDealService.findDealsUsingNewSearchFlow = jest.fn().mockReset();
+    mockDealService.findMatchedDeals = jest.fn().mockReset();
     mockDealService.findNewDeals = jest.fn().mockReset();
     mockDbService.getDealsByPartitionKey = jest.fn().mockReset();
     mockDbService.saveDeals = jest.fn().mockReset();
@@ -76,10 +75,7 @@ describe("processBuyingNeeds", () => {
   });
 
   test(`Processing is successful: Should not throw error`, async () => {
-    mockDealService.findDealsUsingCurrentSearchFlow = jest.fn().mockImplementation(() => {
-      return MOCK_DEALS;
-    });
-    mockDealService.findDealsUsingNewSearchFlow = jest.fn().mockImplementation(() => {
+    mockDealService.findMatchedDeals = jest.fn().mockImplementation(() => {
       return MOCK_DEALS;
     });
     mockDbService.getDealsByPartitionKey = jest.fn().mockImplementation(() => {
@@ -94,15 +90,13 @@ describe("processBuyingNeeds", () => {
 
     const csvPayload = [
       new CSVItem("sobject1", "dId1", "nId1", "account__c1", "nOwnerId1"),
-      new CSVItem("sobject2", "dId2", "nId2", "account__c2", "dOwnerId2")
+      new CSVItem("sobject2", "dId2", "nId2", "account__c2", "dOwnerId2"),
     ];
 
     await expect(needService.processBuyingNeeds(MOCK_BUYING_NEEDS, MOCK_DEALS, MOCK_DATE_DIR)).resolves.not.toThrow();
 
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).toBeCalled();
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).toBeCalledWith(MOCK_BUYING_NEEDS[0], MOCK_DEALS);
-    expect(mockDealService.findDealsUsingNewSearchFlow).toBeCalled();
-    expect(mockDealService.findDealsUsingNewSearchFlow).toBeCalledWith(MOCK_BUYING_NEEDS[1], MOCK_DEALS);
+    expect(mockDealService.findMatchedDeals).toBeCalled();
+    expect(mockDealService.findMatchedDeals).toBeCalledWith(MOCK_BUYING_NEEDS[1], MOCK_DEALS);
     expect(mockDealService.findNewDeals).toBeCalledTimes(2);
     expect(mockDealService.findNewDeals).toHaveBeenNthCalledWith(1, MOCK_DEALS, MOCK_DEALS, MOCK_BUYING_NEEDS[0]);
     expect(mockDealService.findNewDeals).toHaveBeenNthCalledWith(2, MOCK_DEALS, MOCK_DEALS, MOCK_BUYING_NEEDS[1]);
@@ -123,8 +117,7 @@ describe("processBuyingNeeds", () => {
       needService.processBuyingNeeds(MOCK_EMPTY_BUYING_NEEDS, MOCK_DEALS, MOCK_DATE_DIR)
     ).resolves.not.toThrow();
 
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).not.toBeCalled();
-    expect(mockDealService.findDealsUsingNewSearchFlow).not.toBeCalled();
+    expect(mockDealService.findMatchedDeals).not.toBeCalled();
     expect(mockDealService.findNewDeals).not.toBeCalled();
     expect(mockDbService.getDealsByPartitionKey).not.toBeCalled();
     expect(mockDbService.saveDeals).not.toBeCalled();
@@ -133,10 +126,7 @@ describe("processBuyingNeeds", () => {
   });
 
   test(`Matched deals are empty: Should proceed with processing without errors`, async () => {
-    mockDealService.findDealsUsingCurrentSearchFlow = jest.fn().mockImplementation(() => {
-      return MOCK_EMPTY_DEALS;
-    });
-    mockDealService.findDealsUsingNewSearchFlow = jest.fn().mockImplementation(() => {
+    mockDealService.findMatchedDeals = jest.fn().mockImplementation(() => {
       return MOCK_EMPTY_DEALS;
     });
 
@@ -144,10 +134,8 @@ describe("processBuyingNeeds", () => {
       needService.processBuyingNeeds(MOCK_BUYING_NEEDS, MOCK_EMPTY_DEALS, MOCK_DATE_DIR)
     ).resolves.not.toThrow();
 
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).toBeCalled();
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).toBeCalledWith(MOCK_BUYING_NEEDS[0], MOCK_EMPTY_DEALS);
-    expect(mockDealService.findDealsUsingNewSearchFlow).toBeCalled();
-    expect(mockDealService.findDealsUsingNewSearchFlow).toBeCalledWith(MOCK_BUYING_NEEDS[1], MOCK_EMPTY_DEALS);
+    expect(mockDealService.findMatchedDeals).toBeCalled();
+    expect(mockDealService.findMatchedDeals).toBeCalledWith(MOCK_BUYING_NEEDS[1], MOCK_EMPTY_DEALS);
     expect(mockDealService.findNewDeals).not.toBeCalled();
     expect(mockDbService.getDealsByPartitionKey).not.toBeCalled();
     expect(mockDbService.saveDeals).not.toBeCalled();
@@ -156,10 +144,7 @@ describe("processBuyingNeeds", () => {
   });
 
   test(`New deals are empty: Should proceed with processing without errors`, async () => {
-    mockDealService.findDealsUsingCurrentSearchFlow = jest.fn().mockImplementation(() => {
-      return MOCK_DEALS;
-    });
-    mockDealService.findDealsUsingNewSearchFlow = jest.fn().mockImplementation(() => {
+    mockDealService.findMatchedDeals = jest.fn().mockImplementation(() => {
       return MOCK_DEALS;
     });
     mockDbService.getDealsByPartitionKey = jest.fn().mockImplementation(() => {
@@ -171,10 +156,8 @@ describe("processBuyingNeeds", () => {
 
     await expect(needService.processBuyingNeeds(MOCK_BUYING_NEEDS, MOCK_DEALS, MOCK_DATE_DIR)).resolves.not.toThrow();
 
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).toBeCalled();
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).toBeCalledWith(MOCK_BUYING_NEEDS[0], MOCK_DEALS);
-    expect(mockDealService.findDealsUsingNewSearchFlow).toBeCalled();
-    expect(mockDealService.findDealsUsingNewSearchFlow).toBeCalledWith(MOCK_BUYING_NEEDS[1], MOCK_DEALS);
+    expect(mockDealService.findMatchedDeals).toBeCalled();
+    expect(mockDealService.findMatchedDeals).toBeCalledWith(MOCK_BUYING_NEEDS[1], MOCK_DEALS);
     expect(mockDealService.findNewDeals).toBeCalledTimes(2);
     expect(mockDealService.findNewDeals).toHaveBeenNthCalledWith(1, MOCK_DEALS, MOCK_DEALS, MOCK_BUYING_NEEDS[0]);
     expect(mockDealService.findNewDeals).toHaveBeenNthCalledWith(2, MOCK_DEALS, MOCK_DEALS, MOCK_BUYING_NEEDS[1]);
@@ -187,10 +170,7 @@ describe("processBuyingNeeds", () => {
   });
 
   test(`Put deals to S3 generates S3PutObjectError: Should delete deals and throw S3PutObjectError error`, async () => {
-    mockDealService.findDealsUsingCurrentSearchFlow = jest.fn().mockImplementation(() => {
-      return MOCK_DEALS;
-    });
-    mockDealService.findDealsUsingNewSearchFlow = jest.fn().mockImplementation(() => {
+    mockDealService.findMatchedDeals = jest.fn().mockImplementation(() => {
       return MOCK_DEALS;
     });
     mockDbService.getDealsByPartitionKey = jest.fn().mockImplementation(() => {
@@ -207,16 +187,15 @@ describe("processBuyingNeeds", () => {
 
     const csvPayload = [
       new CSVItem("sobject1", "dId1", "nId1", "account__c1", "nOwnerId1"),
-      new CSVItem("sobject2", "dId2", "nId2", "account__c2", "dOwnerId2")
+      new CSVItem("sobject2", "dId2", "nId2", "account__c2", "dOwnerId2"),
     ];
 
     await expect(needService.processBuyingNeeds(MOCK_BUYING_NEEDS, MOCK_DEALS, MOCK_DATE_DIR)).rejects.toThrow(
       S3PutObjectError
     );
 
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).toBeCalled();
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).toBeCalledWith(MOCK_BUYING_NEEDS[0], MOCK_DEALS);
-    expect(mockDealService.findDealsUsingNewSearchFlow).not.toBeCalled();
+    expect(mockDealService.findMatchedDeals).toBeCalled();
+    expect(mockDealService.findMatchedDeals).toBeCalledWith(MOCK_BUYING_NEEDS[0], MOCK_DEALS);
     expect(mockDealService.findNewDeals).toBeCalled();
     expect(mockDealService.findNewDeals).toBeCalledWith(MOCK_DEALS, MOCK_DEALS, MOCK_BUYING_NEEDS[0]);
     expect(mockDbService.getDealsByPartitionKey).toBeCalled();
@@ -230,10 +209,7 @@ describe("processBuyingNeeds", () => {
   });
 
   test(`Put deals to S3 generates unexpected error: Should throw unexpected error`, async () => {
-    mockDealService.findDealsUsingCurrentSearchFlow = jest.fn().mockImplementation(() => {
-      return MOCK_DEALS;
-    });
-    mockDealService.findDealsUsingNewSearchFlow = jest.fn().mockImplementation(() => {
+    mockDealService.findMatchedDeals = jest.fn().mockImplementation(() => {
       return MOCK_DEALS;
     });
     mockDbService.getDealsByPartitionKey = jest.fn().mockImplementation(() => {
@@ -250,14 +226,13 @@ describe("processBuyingNeeds", () => {
 
     const csvPayload = [
       new CSVItem("sobject1", "dId1", "nId1", "account__c1", "nOwnerId1"),
-      new CSVItem("sobject2", "dId2", "nId2", "account__c2", "dOwnerId2")
+      new CSVItem("sobject2", "dId2", "nId2", "account__c2", "dOwnerId2"),
     ];
 
     await expect(needService.processBuyingNeeds(MOCK_BUYING_NEEDS, MOCK_DEALS, MOCK_DATE_DIR)).rejects.toThrow(Error);
 
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).toBeCalled();
-    expect(mockDealService.findDealsUsingCurrentSearchFlow).toBeCalledWith(MOCK_BUYING_NEEDS[0], MOCK_DEALS);
-    expect(mockDealService.findDealsUsingNewSearchFlow).not.toBeCalled();
+    expect(mockDealService.findMatchedDeals).toBeCalled();
+    expect(mockDealService.findMatchedDeals).toBeCalledWith(MOCK_BUYING_NEEDS[0], MOCK_DEALS);
     expect(mockDealService.findNewDeals).toBeCalled();
     expect(mockDealService.findNewDeals).toBeCalledWith(MOCK_DEALS, MOCK_DEALS, MOCK_BUYING_NEEDS[0]);
     expect(mockDbService.getDealsByPartitionKey).toBeCalled();

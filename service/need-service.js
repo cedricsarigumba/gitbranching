@@ -15,14 +15,7 @@ async function processBuyingNeeds(buyingNeeds, deals, dateDir) {
     let newDeals = [];
 
     try {
-      let matchedDeals;
-      let industrySmallList = utils.splitStringToArray(need.industry_small__c, ";");
-
-      if (industryListExist(industrySmallList)) {
-        matchedDeals = dealService.findDealsUsingCurrentSearchFlow(need, deals);
-      } else {
-        matchedDeals = dealService.findDealsUsingNewSearchFlow(need, deals);
-      }
+      let matchedDeals = dealService.findMatchedDeals(need, deals);
 
       if (matchedDeals.length) {
         let oldDeals = await dbService.getDealsByPartitionKey(need.id);
@@ -55,10 +48,6 @@ async function processBuyingNeeds(buyingNeeds, deals, dateDir) {
   }
 
   log.info(`Total number of new data inserted: ${newDealsTotal.length}`);
-}
-
-function industryListExist(industryList) {
-  return utils.isNonEmptyArray(industryList);
 }
 
 module.exports.processBuyingNeeds = processBuyingNeeds;
