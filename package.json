@@ -6,9 +6,10 @@
   "scripts": {
     "start": "pm2 start --name search-execute ./app.js -i 1",
     "start:dev": "nodemon ./app.js",
-    "package": "rm -rf dist && mkdir dist && npm run package-prepare",
+    "package": "rm -rf dist && mkdir dist && npm test && npm run package-prepare",
     "package-prepare": "cp -r aws common config model service dist/ && cp package.json dist/ && cp index.js dist/ && cp app.js dist/ && cd dist && npm install --production && 7z a package.zip .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --silent true --verbose true",
+    "test-coverage": "jest --silent true --coverage"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
     "winston": "3.2.1"
   },
   "devDependencies": {
-    "nodemon": "1.19.2"
+    "nodemon": "1.19.2",
+    "jest": "^25.1.0"
   }
 }

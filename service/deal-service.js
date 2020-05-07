@@ -5,17 +5,19 @@ const { ItemModel } = require("../model/item-model");
 const { config } = require("../config/app-config");
 
 /** Cross-check each deals if it matched the need buyingNeeds. If not match, disregard the deal */
-function findDealsUsingCurrentSearchFlow(need, deals) {
+function findMatchedDeals(need, deals) {
   const needPrefNames = utils.splitStringToArray(need.prefname__c, ";");
   const needCountryResidences = utils.splitStringToArray(need.countryresidence__c, ";");
-  const needIndustries = utils.splitStringToArray(need.industry_small__c, ";");
+  const needIndustries = utils.splitStringToArray(need.desiredindustrysmall__c, ";");
 
-  return deals.filter(deal => {
+  return deals.filter((deal) => {
     let dealPrefname = deal.prefname__c;
     if (
       ((dealPrefname !== constants.OUTSIDE_JAPAN && utils.isElementExist(needPrefNames, dealPrefname)) ||
         utils.isElementExist(needCountryResidences, deal.countryresidence__c)) &&
-      utils.isElementExist(needIndustries, deal.industry_small__c)
+      (utils.isElementExist(needIndustries, deal.industrysmall1__c) ||
+        utils.isElementExist(needIndustries, deal.industrysmall2__c) ||
+        utils.isElementExist(needIndustries, deal.industrysmall3__c))
     ) {
       return deal;
     }
@@ -29,7 +31,7 @@ function findNewDeals(oldDeals, matchedDeals, buyingNeed) {
   for (var i = 0, len = matchedDeals.length; i < len; i++) {
     let deal = matchedDeals[i];
 
-    let dealRecords = oldDeals.filter(dbItem => dbItem.deal_id === deal.id);
+    let dealRecords = oldDeals.filter((dbItem) => dbItem.deal_id === deal.id);
 
     if (constants.DB_STATUS.BOTH_EXIST === dealRecords.length) {
       // * do nothing - deal exist for both AWS_Search_Needs & AWS_Search_Deals
@@ -67,7 +69,7 @@ function getEligibleDeals(dealRecords, deal, need) {
 }
 
 /** Check deal if eligible for AWS_Search_Deal__c or AWS_Search_Needs__C */
-const filterEligibleDeal = deal => {
+const filterEligibleDeal = (deal) => {
   const ranks = utils.splitStringToArray(config["DEAL_RANKS"]);
 
   let nresp =
@@ -82,27 +84,7 @@ const filterEligibleDeal = deal => {
   return { isEligibleForNeeds: nresp, isEligibleForDeals: dresp };
 };
 
-function findDealsUsingNewSearchFlow(need, deals) {
-  const needPrefNames = utils.splitStringToArray(need.prefname__c, ";");
-  const needCountryResidences = utils.splitStringToArray(need.countryresidence__c, ";");
-  const needIndustries = utils.splitStringToArray(need.desiredindustrysmall__c, ";");
-
-  return deals.filter(deal => {
-    let dealPrefname = deal.prefname__c;
-    if (
-      ((dealPrefname !== constants.OUTSIDE_JAPAN && utils.isElementExist(needPrefNames, dealPrefname)) ||
-        utils.isElementExist(needCountryResidences, deal.countryresidence__c)) &&
-      (utils.isElementExist(needIndustries, deal.industrysmall1__c) ||
-        utils.isElementExist(needIndustries, deal.industrysmall2__c) ||
-        utils.isElementExist(needIndustries, deal.industrysmall3__c))
-    ) {
-      return deal;
-    }
-  });
-}
-
 module.exports = {
-  findDealsUsingCurrentSearchFlow,
+  findMatchedDeals,
   findNewDeals,
-  findDealsUsingNewSearchFlow
 };
