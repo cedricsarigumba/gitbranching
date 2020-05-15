@@ -8,6 +8,7 @@ phases:
   build:
     commands:
       - npm test
+      - rm -rf tmp/log/*
       - rm -rf node_modules && npm install --production
       - zip -rq package.zip .
   post_build:
