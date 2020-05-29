@@ -33,11 +33,17 @@ $ npm install -d
 $ npm run start:dev
 ```
 
-**For production environments**, application will be loaded in [AWS-EC2](https://aws.amazon.com/ec2/) via [user-data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) thus there is no need to manually install the dependencies, just package the source code and upload manually to AWS-S3 deployment bucket.
+**For production environments**, application will be loaded in [AWS-EC2](https://aws.amazon.com/ec2/) via [user-data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) thus there is no need to manually install the dependencies.
+
+Run the following command to deploy the function to AWS using AWS CLI.
 
 ```sh
-$ npm run package
+npm run deploy $env
 ```
+
+Valid values for `$env` are `tst`, `stg`, and `prd`.
+
+More info: [How to deploy the lambda function on AWS (CLI)](https://nihon-ma.backlog.com/alias/wiki/351329)
 
 ### Production maintenance
 
@@ -95,15 +101,11 @@ SPLIT_LIMIT =
 DEPLOY_BUCKET =
 ```
 
-### Todos
-
-- unit test
-
-  [NodeJS]: <https://nodejs.org/en/>
-  [aws-sdk]: <https://aws.amazon.com/sdk-for-node-js/>
-  [sqs-consumer]: <https://github.com/BBC/sqs-consumer>
-  [csvtojson]: <https://github.com/Keyang/node-csvtojson>
-  [json2csv]: <https://github.com/zemirco/json2csv#readme>
-  [winston]: <https://github.com/winstonjs/winston>
-  [nodemon]: <https://github.com/remy/nodemon>
-  [PM2]: <https://github.com/Unitech/pm2>
+[nodejs]: https://nodejs.org/en/
+[aws-sdk]: https://aws.amazon.com/sdk-for-node-js/
+[sqs-consumer]: https://github.com/BBC/sqs-consumer
+[csvtojson]: https://github.com/Keyang/node-csvtojson
+[json2csv]: https://github.com/zemirco/json2csv#readme
+[winston]: https://github.com/winstonjs/winston
+[nodemon]: https://github.com/remy/nodemon
+[pm2]: https://github.com/Unitech/pm2

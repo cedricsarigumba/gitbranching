@@ -6,10 +6,11 @@
   "scripts": {
     "start": "pm2 start --name search-execute ./app.js -i 1",
     "start:dev": "nodemon ./app.js",
-    "package": "rm -rf dist && mkdir dist && npm test && npm run package-prepare",
-    "package-prepare": "cp -r aws common config model service dist/ && cp package.json dist/ && cp index.js dist/ && cp app.js dist/ && cd dist && npm install --production && 7z a package.zip .",
+    "package": "rm -rf dist && npm test && npm run package-prepare && cd dist && 7z a package.zip .",
+    "package-prepare": "mkdir dist && cp -r aws common config model service tests dist/ && cp package.json dist/ && cp index.js dist/ && cp app.js dist/ && cp buildspec.yml dist/",
     "test": "jest --silent true --verbose true",
-    "test-coverage": "jest --silent true --coverage"
+    "test-coverage": "jest --silent true --coverage",
+    "deploy": "npm run package && bash .\\scripts\\deploy.sh se-search-execution-function"
   },
   "repository": {
     "type": "git",
