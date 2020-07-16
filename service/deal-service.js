@@ -33,54 +33,58 @@ function filterDealsByBaseConditions(need, deals) {
 }
 
 function filterDealsByInvestments(need, deals) {
-  const investable_lower__c = isEmptyString(need.investable_lower__c) ? null : BigInt(need.investable_lower__c);
-  const investable_upper__c = isEmptyString(need.investable_upper__c) ? null : BigInt(need.investable_upper__c);
+  const investableLower = isEmptyString(need.investable_lower__c) ? null : BigInt(need.investable_lower__c);
+  const investableUpper = isEmptyString(need.investable_upper__c) ? null : BigInt(need.investable_upper__c);
+
+  // If need investables fields are null, then we do not need to do any filtering.
+  if (isNull(investableLower) && isNull(investableUpper)) return deals;
 
   return deals.filter(deal => {
-    const askingprice__c = isEmptyString(deal.askingprice__c) ? null : BigInt(deal.askingprice__c);
-    const refa__c = isEmptyString(deal.refa__c) ? null : BigInt(deal.refa__c);
+    const askingPrice = isEmptyString(deal.askingprice__c) ? null : BigInt(deal.askingprice__c);
+    const refa = isEmptyString(deal.refa__c) ? null : BigInt(deal.refa__c);
 
-    if (isNull(investable_lower__c) && isNull(investable_upper__c)) return true;
-    if (isNull(askingprice__c) && isNull(refa__c)) return false;
+    if (isNull(askingPrice) && isNull(refa)) return false;
 
-    if (nonNull(investable_lower__c) && isNull(investable_upper__c)) {
-      if (nonNull(askingprice__c)) {
-        return investable_lower__c <= askingprice__c;
-      } else if (nonNull(refa__c)) {
-        return investable_lower__c <= refa__c;
+    if (nonNull(investableLower) && isNull(investableUpper)) {
+      if (nonNull(askingPrice)) {
+        return investableLower <= askingPrice;
+      } else {
+        return investableLower <= refa;
       }
-    } else if (isNull(investable_lower__c) && nonNull(investable_upper__c)) {
-      if (nonNull(askingprice__c)) {
-        return askingprice__c <= investable_upper__c;
-      } else if (nonNull(refa__c)) {
-        return refa__c <= investable_upper__c;
+    } else if (isNull(investableLower) && nonNull(investableUpper)) {
+      if (nonNull(askingPrice)) {
+        return askingPrice <= investableUpper;
+      } else {
+        return refa <= investableUpper;
       }
     } else {
-      if (nonNull(askingprice__c)) {
-        return investable_lower__c <= askingprice__c && askingprice__c <= investable_upper__c;
-      } else if (nonNull(refa__c)) {
-        return investable_lower__c <= refa__c && refa__c <= investable_upper__c;
+      if (nonNull(askingPrice)) {
+        return investableLower <= askingPrice && askingPrice <= investableUpper;
+      } else {
+        return investableLower <= refa && refa <= investableUpper;
       }
     }
   });
 }
 
 function filterDealsBySales(need, deals) {
-  const salesscale_lower__c = isEmptyString(need.salesscale_lower__c) ? null : BigInt(need.salesscale_lower__c);
-  const salesscale_upper__c = isEmptyString(need.salesscale_upper__c) ? null : BigInt(need.salesscale_upper__c);
+  const salesScaleLower = isEmptyString(need.salesscale_lower__c) ? null : BigInt(need.salesscale_lower__c);
+  const salesScaleUpper = isEmptyString(need.salesscale_upper__c) ? null : BigInt(need.salesscale_upper__c);
+
+  //  If need sales fields are null, then we do not need to do any filtering.
+  if (isNull(salesScaleLower) && isNull(salesScaleUpper)) return deals;
 
   return deals.filter(deal => {
-    const sales__c = isEmptyString(deal.sales__c) ? null : BigInt(deal.sales__c);
+    const sales = isEmptyString(deal.sales__c) ? null : BigInt(deal.sales__c);
 
-    if (isNull(salesscale_lower__c) && isNull(salesscale_upper__c)) return true;
-    if (isNull(sales__c)) return false;
+    if (isNull(sales)) return false;
 
-    if (nonNull(salesscale_lower__c) && isNull(salesscale_upper__c)) {
-      return salesscale_lower__c <= sales__c;
-    } else if (isNull(salesscale_lower__c) && nonNull(salesscale_upper__c)) {
-      return sales__c <= salesscale_upper__c;
+    if (nonNull(salesScaleLower) && isNull(salesScaleUpper)) {
+      return salesScaleLower <= sales;
+    } else if (isNull(salesScaleLower) && nonNull(salesScaleUpper)) {
+      return sales <= salesScaleUpper;
     } else {
-      return salesscale_lower__c <= sales__c && sales__c <= salesscale_upper__c;
+      return salesScaleLower <= sales && sales <= salesScaleUpper;
     }
   });
 }

@@ -224,23 +224,6 @@ describe("findMatchedDeals", () => {
       industrysmall3__c: "industry_small__c"
     };
 
-    test("All investment fields are empty: Should return the matched deals", () => {
-      const testNeed = {
-        ...baseNeed,
-        investable_lower__c: "",
-        investable_upper__c: ""
-      };
-      const testDeals = [
-        {
-          ...baseDeals,
-          askingprice__c: "100000",
-          refa__c: "200000"
-        }
-      ];
-
-      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
-    });
-
     test("All investment fields have values: Should return the 2nd deal only", () => {
       const testNeed = {
         ...baseNeed,
@@ -269,6 +252,40 @@ describe("findMatchedDeals", () => {
       ];
 
       expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("All investment fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "", // null
+        investable_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "100000",
+          refa__c: "200000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
+    });
+
+    test("All Need investment & Deal trading price fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "", // null
+        investable_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "", // null
+          refa__c: "" // null
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
     });
 
     test("InvestableLower <= AskingPrice: Should return the 2nd deal only", () => {
@@ -910,22 +927,6 @@ describe("findMatchedDeals", () => {
       industrysmall3__c: "industry_small__c"
     };
 
-    test("All sales fields are empty: Should return the matched deals", () => {
-      const testNeed = {
-        ...baseNeed,
-        salesscale_lower__c: "",
-        salesscale_upper__c: ""
-      };
-      const testDeals = [
-        {
-          ...baseDeals,
-          sales__c: "300000"
-        }
-      ];
-
-      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
-    });
-
     test("All sales fields have values: Should return the 2nd deal only", () => {
       const testNeed = {
         ...baseNeed,
@@ -951,6 +952,38 @@ describe("findMatchedDeals", () => {
       ];
 
       expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("All sales fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "", // null
+        salesscale_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "300000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
+    });
+
+    test("All Need & Deal sales fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "", // null
+        salesscale_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "" // null
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
     });
 
     test("SalesScaleLower <= Sales: Should return the 2nd deal only", () => {
