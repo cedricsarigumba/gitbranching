@@ -2,7 +2,7 @@ const { InputValidationError } = require("./custom-error");
 const constants = require("../common/constants");
 const { Parser: jsonParser } = require("json2csv");
 
-const buildResponse = function(status, body) {
+const buildResponse = function (status, body) {
   var response = {
     statusCode: status,
     headers: {
@@ -14,7 +14,7 @@ const buildResponse = function(status, body) {
   return response;
 };
 
-const validateRequest = function(message) {
+const validateRequest = function (message) {
   let s3Obj = getS3ObjFromMessage(message);
 
   if (isUndefined(s3Obj) || s3Obj === null) {
@@ -26,7 +26,7 @@ const validateRequest = function(message) {
   }
 };
 
-const splitArrayIntoChunks = function(recordsArray, splitLimit) {
+const splitArrayIntoChunks = function (recordsArray, splitLimit) {
   var arr = [];
 
   for (index = 0, arrayLength = recordsArray.length; index < arrayLength; index += splitLimit) {
@@ -36,7 +36,7 @@ const splitArrayIntoChunks = function(recordsArray, splitLimit) {
   return arr;
 };
 
-const splitToCsvStrings = function(recordsArray, splitLimit) {
+const splitToCsvStrings = function (recordsArray, splitLimit) {
   let csvStringArray = [];
   const json2csvParser = new jsonParser({ fields: constants.CSV_HEADERS, quote: "" });
 
@@ -67,6 +67,10 @@ const isEmptyString = value =>
 
 const isNonEmptyArray = arr => arr != null && arr != undefined && arr.length;
 
+const isNull = obj => obj === null;
+
+const nonNull = obj => !isNull(obj);
+
 module.exports = {
   validateRequest,
   isUndefined,
@@ -78,5 +82,8 @@ module.exports = {
   splitArrayIntoChunks,
   splitToCsvStrings,
   stringToBool,
-  isNonEmptyArray
+  isNonEmptyArray,
+  isEmptyString,
+  isNull,
+  nonNull
 };
