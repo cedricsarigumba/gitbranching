@@ -10,140 +10,140 @@ jest.mock("aws-sdk", () => {
   return {
     ...jest.requireActual("aws-sdk"),
     SSM: jest.fn(() => ({
-      getParametersByPath: jest.fn((param) => {
+      getParametersByPath: jest.fn(param => {
         const MOCK_ENV_VARIABLES = {
           SE_SRCH_NEEDS_BUCKET: {
             Parameters: [
               {
                 Name: "SE_SRCH_NEEDS_BUCKET",
-                Value: "MOCK_SE_SRCH_NEEDS_BUCKET",
-              },
+                Value: "MOCK_SE_SRCH_NEEDS_BUCKET"
+              }
             ],
-            NextToken: "SF2AWS_LATEST_BUCKET",
+            NextToken: "SF2AWS_LATEST_BUCKET"
           },
           SF2AWS_LATEST_BUCKET: {
             Parameters: [
               {
                 Name: "SF2AWS_LATEST_BUCKET",
-                Value: "MOCK_SF2AWS_LATEST_BUCKET",
-              },
+                Value: "MOCK_SF2AWS_LATEST_BUCKET"
+              }
             ],
-            NextToken: "SE_AWS2SF_DATA_BUCKET",
+            NextToken: "SE_AWS2SF_DATA_BUCKET"
           },
           SE_AWS2SF_DATA_BUCKET: {
             Parameters: [
               {
                 Name: "SE_AWS2SF_DATA_BUCKET",
-                Value: "MOCK_SE_AWS2SF_DATA_BUCKET",
-              },
+                Value: "MOCK_SE_AWS2SF_DATA_BUCKET"
+              }
             ],
-            NextToken: "SE_SRCH_NEEDS_QUEUE",
+            NextToken: "SE_SRCH_NEEDS_QUEUE"
           },
           SE_SRCH_NEEDS_QUEUE: {
             Parameters: [
               {
                 Name: "SE_SRCH_NEEDS_QUEUE",
-                Value: "MOCK_SE_SRCH_NEEDS_QUEUE",
-              },
+                Value: "MOCK_SE_SRCH_NEEDS_QUEUE"
+              }
             ],
-            NextToken: "QUEUE_BATCH_SIZE",
+            NextToken: "QUEUE_BATCH_SIZE"
           },
           QUEUE_BATCH_SIZE: {
             Parameters: [
               {
                 Name: "QUEUE_BATCH_SIZE",
-                Value: "2",
-              },
+                Value: "2"
+              }
             ],
-            NextToken: "DEAL_RANKS",
+            NextToken: "DEAL_RANKS"
           },
           DEAL_RANKS: {
             Parameters: [
               {
                 Name: "DEAL_RANKS",
-                Value: "S,A,B,B-",
-              },
+                Value: "S,A,B,B-"
+              }
             ],
-            NextToken: "DB_TABLE",
+            NextToken: "DB_TABLE"
           },
           DB_TABLE: {
             Parameters: [
               {
                 Name: "DB_TABLE",
-                Value: "MOCK_DB_TABLE",
-              },
+                Value: "MOCK_DB_TABLE"
+              }
             ],
-            NextToken: "SE_SRC_CODE_KEY",
+            NextToken: "SE_SRC_CODE_KEY"
           },
           SE_SRC_CODE_KEY: {
             Parameters: [
               {
                 Name: "SE_SRC_CODE_KEY",
-                Value: "MOCK_SE_SRC_CODE_KEY",
-              },
+                Value: "MOCK_SE_SRC_CODE_KEY"
+              }
             ],
-            NextToken: "AWS_ACCESSKEY_ID",
+            NextToken: "AWS_ACCESSKEY_ID"
           },
           AWS_ACCESSKEY_ID: {
             Parameters: [
               {
                 Name: "AWS_ACCESSKEY_ID",
-                Value: "MOCK_AWS_ACCESSKEY_ID",
-              },
+                Value: "MOCK_AWS_ACCESSKEY_ID"
+              }
             ],
-            NextToken: "AWS_SECRETACCESS_KEY",
+            NextToken: "AWS_SECRETACCESS_KEY"
           },
           AWS_SECRETACCESS_KEY: {
             Parameters: [
               {
                 Name: "AWS_SECRETACCESS_KEY",
-                Value: "MOCK_AWS_SECRETACCESS_KEY",
-              },
+                Value: "MOCK_AWS_SECRETACCESS_KEY"
+              }
             ],
-            NextToken: "PROFILE",
+            NextToken: "PROFILE"
           },
           PROFILE: {
             Parameters: [
               {
                 Name: "PROFILE",
-                Value: "dev",
-              },
+                Value: "dev"
+              }
             ],
-            NextToken: "SPLIT_LIMIT",
+            NextToken: "SPLIT_LIMIT"
           },
           SPLIT_LIMIT: {
             Parameters: [
               {
                 Name: "SPLIT_LIMIT",
-                Value: "2",
-              },
+                Value: "2"
+              }
             ],
-            NextToken: "DEPLOY_BUCKET",
+            NextToken: "DEPLOY_BUCKET"
           },
           DEPLOY_BUCKET: {
             Parameters: [
               {
                 Name: "DEPLOY_BUCKET",
-                Value: "MOCK_DEPLOY_BUCKET",
-              },
+                Value: "MOCK_DEPLOY_BUCKET"
+              }
             ],
-            NextToken: false,
-          },
+            NextToken: false
+          }
         };
         if (param.NextToken === null || param.NextToken === undefined) {
           return {
             promise: jest.fn(() => {
               return MOCK_ENV_VARIABLES["SE_SRCH_NEEDS_BUCKET"];
-            }),
+            })
           };
         }
         return {
           promise: jest.fn(() => {
             return MOCK_ENV_VARIABLES[[param.NextToken]];
-          }),
+          })
         };
-      }),
-    })),
+      })
+    }))
   };
 });
 
@@ -155,54 +155,1130 @@ beforeAll(async () => {
 });
 
 describe("findMatchedDeals", () => {
-  test("Has matched deals: Should return the matched deals", () => {
-    const MOCK_DEALS = [
-      {
+  describe("filterDealsByBaseConditions", () => {
+    test("Has matched deals: Should return the matched deals", () => {
+      const MOCK_DEALS = [
+        {
+          prefname__c: "prefname__c",
+          countryresidence__c: "countryresidence__c",
+          industrysmall1__c: "industry_small__c",
+          industrysmall2__c: "industry_small__c",
+          industrysmall3__c: "industry_small__c"
+        }
+      ];
+      const MOCK_NEED = {
         prefname__c: "prefname__c",
         countryresidence__c: "countryresidence__c",
-        industrysmall1__c: "industry_small__c",
-        industrysmall2__c: "industry_small__c",
-        industrysmall3__c: "industry_small__c",
-      },
-    ];
-    const MOCK_NEED = {
+        desiredindustrysmall__c: "industry_small__c"
+      };
+      expect(dealService.findMatchedDeals(MOCK_NEED, MOCK_DEALS)).toStrictEqual(MOCK_DEALS);
+    });
+
+    test("Has no matched deals: Should return the empty deals", () => {
+      const MOCK_DEALS = [
+        {
+          prefname__c: "prefname__c",
+          countryresidence__c: "countryresidence__c",
+          industrysmall1__c: "industry_small__c",
+          industrysmall2__c: "industry_small__c",
+          industrysmall3__c: "industry_small__c"
+        },
+        {
+          prefname__c: "prefname__c",
+          countryresidence__c: constants.OUTSIDE_JAPAN,
+          industrysmall1__c: "industry_small__c",
+          industrysmall2__c: "industry_small__c",
+          industrysmall3__c: "industry_small__c"
+        },
+        {
+          prefname__c: "prefname__c1",
+          countryresidence__c: "countryresidence__c",
+          industrysmall1__c: "industry_small__c",
+          industrysmall2__c: "industry_small__c",
+          industrysmall3__c: "industry_small__c"
+        }
+      ];
+      const MOCK_NEED = {
+        prefname__c: "prefname__c1",
+        countryresidence__c: "countryresidence__c1",
+        desiredindustrysmall__c: "industry_small__c1"
+      };
+      expect(dealService.findMatchedDeals(MOCK_NEED, MOCK_DEALS)).toStrictEqual([]);
+    });
+  });
+
+  describe("filterDealsByInvestments", () => {
+    const baseNeed = {
       prefname__c: "prefname__c",
       countryresidence__c: "countryresidence__c",
       desiredindustrysmall__c: "industry_small__c",
+      salesscale_lower__c: "",
+      salesscale_upper__c: ""
     };
-    expect(dealService.findMatchedDeals(MOCK_NEED, MOCK_DEALS)).toStrictEqual(MOCK_DEALS);
+
+    const baseDeals = {
+      prefname__c: "prefname__c",
+      countryresidence__c: "countryresidence__c",
+      industrysmall1__c: "industry_small__c",
+      industrysmall2__c: "industry_small__c",
+      industrysmall3__c: "industry_small__c"
+    };
+
+    test("All investment fields have values: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "700000", // does not match investable thresholds
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "250000",
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "250000",
+          refa__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("All investment fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "", // null
+        investable_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "100000",
+          refa__c: "200000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
+    });
+
+    test("All Need investment & Deal trading price fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "", // null
+        investable_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "", // null
+          refa__c: "" // null
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
+    });
+
+    test("InvestableLower <= AskingPrice: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: ""
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "50000", // not match lower
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "250000", // investablelower <= askingprice
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "250000",
+          refa__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower == AskingPrice: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: ""
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "50000", // not match lower
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "100000", // investablelower == askingprice
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "100000",
+          refa__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower !<= AskingPrice: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "300000",
+        investable_upper__c: ""
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "50000", // not match lower
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "250000", // investablelower > askingprice
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower <= Refa: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: ""
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "50000" // not match lower
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "250000" // InvestableLower <= Refa
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower == Refa: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: ""
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "50000" // not match lower
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "100000" // InvestableLower == Refa
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "100000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower !<= Refa: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "350000",
+        investable_upper__c: ""
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "250000",
+          refa__c: "250000" // InvestableLower <= Refa
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "250000" // InvestableLower > Refa
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableUpper >= AskingPrice: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "1000000", // not match higher
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "250000", // InvestableUpper >= AskingPrice
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "250000",
+          refa__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableUpper == AskingPrice: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "1000000", // not match higher
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "500000", // InvestableUpper == AskingPrice
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "500000",
+          refa__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableUpper !>= AskingPrice: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "1000000", // not match higher
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "750000", // InvestableUpper < AskingPrice
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableUpper >= Refa: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "1000000" // not match higher
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "250000" // InvestableUpper > Refa
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "250000"
+        }
+      ];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableUpper == Refa: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "1000000" // not match higher
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "500000" // InvestableUpper == Refa
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "500000"
+        }
+      ];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableUpper !>= Refa: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "1000000" // not match higher
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "750000" // InvestableUpper < Refa
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower <= AskingPrice <= InvestableUpper: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "1000000", // not much higher
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "250000", // InvestableLower <= AskingPrice <= InvestableUpper
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "250000",
+          refa__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower == AskingPrice <= InvestableUpper: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "1000000", // not much higher
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "100000", // InvestableLower == AskingPrice <= InvestableUpper
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "100000",
+          refa__c: "250000"
+        }
+      ];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower !<= AskingPrice <= InvestableUpper: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "1000000", // not much higher
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "50000", // InvestableLower > AskingPrice <= InvestableUpper
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower <= AskingPrice == InvestableUpper: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "1000000", // not much higher
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "500000", // InvestableLower <= AskingPrice == InvestableUpper
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "500000",
+          refa__c: "250000"
+        }
+      ];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower <= AskingPrice !<= InvestableUpper: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "1000000", // not much higher
+          refa__c: "250000"
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "750000", // InvestableLower <= AskingPrice > InvestableUpper
+          refa__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower <= Refa <= InvestableUpper: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "1000000" // not match higher
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "250000" // InvestableLower <= Refa <= InvestableUpper
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower == Refa <= InvestableUpper: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "1000000" // not match higher
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "100000" // InvestableLower == Refa <= InvestableUpper
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "100000"
+        }
+      ];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower !<= Refa <= InvestableUpper: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "1000000" // not match higher
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "50000" // InvestableLower > Refa <= InvestableUpper
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower <= Refa == InvestableUpper: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "1000000" // not match higher
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "500000" // InvestableLower <= Refa == InvestableUpper
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "500000"
+        }
+      ];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("InvestableLower <= Refa !<= InvestableUpper: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "1000000" // not match higher
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "",
+          refa__c: "750000" // InvestableLower <= Refa > InvestableUpper
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("Null AskingPrice & Refa: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "100000",
+        investable_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "", // null
+          refa__c: "" // null
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "", // null
+          refa__c: "" // null
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
   });
 
-  test("Has no matched deals: Should return the empty deals", () => {
-    const MOCK_DEALS = [
-      {
-        prefname__c: "prefname__c",
-        countryresidence__c: "countryresidence__c",
-        industrysmall1__c: "industry_small__c",
-        industrysmall2__c: "industry_small__c",
-        industrysmall3__c: "industry_small__c",
-      },
-      {
-        prefname__c: "prefname__c",
-        countryresidence__c: constants.OUTSIDE_JAPAN,
-        industrysmall1__c: "industry_small__c",
-        industrysmall2__c: "industry_small__c",
-        industrysmall3__c: "industry_small__c",
-      },
-      {
-        prefname__c: "prefname__c1",
-        countryresidence__c: "countryresidence__c",
-        industrysmall1__c: "industry_small__c",
-        industrysmall2__c: "industry_small__c",
-        industrysmall3__c: "industry_small__c",
-      },
-    ];
-    const MOCK_NEED = {
-      prefname__c: "prefname__c1",
-      countryresidence__c: "countryresidence__c1",
-      desiredindustrysmall__c: "industry_small__c1",
+  describe("filterDealsBySales", () => {
+    const baseNeed = {
+      prefname__c: "prefname__c",
+      countryresidence__c: "countryresidence__c",
+      desiredindustrysmall__c: "industry_small__c",
+      investable_lower__c: "",
+      investable_upper__c: ""
     };
-    expect(dealService.findMatchedDeals(MOCK_NEED, MOCK_DEALS)).toStrictEqual([]);
+
+    const baseDeals = {
+      prefname__c: "prefname__c",
+      countryresidence__c: "countryresidence__c",
+      industrysmall1__c: "industry_small__c",
+      industrysmall2__c: "industry_small__c",
+      industrysmall3__c: "industry_small__c"
+    };
+
+    test("All sales fields have values: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "100000",
+        salesscale_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "50000" // does not match salesscale_lower thresholds
+        },
+        {
+          ...baseDeals,
+          sales__c: "250000"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          sales__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("All sales fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "", // null
+        salesscale_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "300000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
+    });
+
+    test("All Need & Deal sales fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "", // null
+        salesscale_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "" // null
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
+    });
+
+    test("SalesScaleLower <= Sales: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "100000",
+        salesscale_upper__c: ""
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "50000" // not matched salesscale_lower
+        },
+        {
+          ...baseDeals,
+          sales__c: "250000" // SalesScaleLower <= Sales
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          sales__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("SalesScaleLower == Sales: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "100000",
+        salesscale_upper__c: ""
+      };
+      const testDeals = [
+        {
+          ...baseNeed,
+          sales__c: "50000" // not matched salesscale_lower
+        },
+        {
+          ...baseDeals,
+          sales__c: "100000" // SalesScaleLower == Sales
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          sales__c: "100000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("SalesScaleLower !<= Sales: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "100000",
+        salesscale_upper__c: ""
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "50000" // not matched salesscale_lower
+        },
+        {
+          ...baseDeals,
+          sales__c: "50000" // SalesScaleLower > Sales
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("SalesScaleUpper >= Sales: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "",
+        salesscale_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "750000" // not matched salesscale_upper__c
+        },
+        {
+          ...baseDeals,
+          sales__c: "250000" // SalesScaleUpper >= Sales
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          sales__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("SalesScaleUpper == Sales: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "",
+        salesscale_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "750000" // not matched salesscale_upper__c
+        },
+        {
+          ...baseDeals,
+          sales__c: "500000" // SalesScaleUpper == Sales
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          sales__c: "500000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("SalesScaleUpper !>= Sales: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "",
+        salesscale_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "750000" // not matched salesscale_upper__c
+        },
+        {
+          ...baseDeals,
+          sales__c: "750000" // SalesScaleUpper < Sales
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("SalesScaleLower <= Sales <= SalesScaleUpper: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "100000",
+        salesscale_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "700000" // does not match sales thresholds
+        },
+        {
+          ...baseDeals,
+          sales__c: "250000" // SalesScaleLower <= Sales <= SalesScaleUpper
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          sales__c: "250000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("SalesScaleLower == Sales <= SalesScaleUpper: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "100000",
+        salesscale_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "700000" // does not match sales thresholds
+        },
+        {
+          ...baseDeals,
+          sales__c: "100000" // SalesScaleLower == Sales <= SalesScaleUpper
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          sales__c: "100000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("SalesScaleLower !<= Sales <= SalesScaleUpper: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "100000",
+        salesscale_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "700000" // does not match sales thresholds
+        },
+        {
+          ...baseDeals,
+          sales__c: "50000" // SalesScaleLower > Sales <= SalesScaleUpper
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("SalesScaleLower <= Sales == SalesScaleUpper: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "100000",
+        salesscale_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "700000" // does not match sales thresholds
+        },
+        {
+          ...baseDeals,
+          sales__c: "500000" // SalesScaleLower <= Sales == SalesScaleUpper
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          sales__c: "500000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("SalesScaleLower <= Sales !<= SalesScaleUpper: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "100000",
+        salesscale_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "700000" // does not match sales thresholds
+        },
+        {
+          ...baseDeals,
+          sales__c: "800000" // SalesScaleLower <= Sales > SalesScaleUpper
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("Null Sales: Should return empty deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "100000",
+        salesscale_upper__c: "500000"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "" // null
+        },
+        {
+          ...baseDeals,
+          sales__c: "" // null
+        }
+      ];
+
+      const expectedDeals = [];
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
   });
 });
 
@@ -211,12 +1287,12 @@ describe("findNewDeals", () => {
     const MOCK_OLD_DEALS = [
       {
         deal_id: "dId1",
-        search_sort_key: constants.DB_SORTK.DEAL,
+        search_sort_key: constants.DB_SORTK.DEAL
       },
       {
         deal_id: "dId2",
-        search_sort_key: constants.DB_SORTK.NEEDS,
-      },
+        search_sort_key: constants.DB_SORTK.NEEDS
+      }
     ];
 
     const MOCK_MATCHED_DEALS = [
@@ -225,8 +1301,8 @@ describe("findNewDeals", () => {
         ownerid: "dOwnerId1",
         dealstage__c: constants.CANDIDATE_UNDECIDED,
         corp_rank__c: "A",
-        hidden__c: "false",
-      },
+        hidden__c: "false"
+      }
     ];
     const MOCK_BUYING_NEED = { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" };
 
@@ -236,7 +1312,7 @@ describe("findNewDeals", () => {
         "_Deal",
         { id: "dId2", ownerid: "dOwnerId1" },
         { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" }
-      ),
+      )
     ];
     expect(dealService.findNewDeals(MOCK_OLD_DEALS, MOCK_MATCHED_DEALS, MOCK_BUYING_NEED)).toStrictEqual(expected);
   });
@@ -245,12 +1321,12 @@ describe("findNewDeals", () => {
     const MOCK_OLD_DEALS = [
       {
         deal_id: "dId1",
-        search_sort_key: constants.DB_SORTK.DEAL,
+        search_sort_key: constants.DB_SORTK.DEAL
       },
       {
         deal_id: "dId2",
-        search_sort_key: constants.DB_SORTK.NEEDS,
-      },
+        search_sort_key: constants.DB_SORTK.NEEDS
+      }
     ];
 
     const MOCK_MATCHED_DEALS = [
@@ -259,8 +1335,8 @@ describe("findNewDeals", () => {
         ownerid: "dOwnerId1",
         dealstage__c: "dealstage__c",
         corp_rank__c: "A",
-        hidden__c: "false",
-      },
+        hidden__c: "false"
+      }
     ];
     const MOCK_BUYING_NEED = { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" };
 
@@ -271,12 +1347,12 @@ describe("findNewDeals", () => {
     const MOCK_OLD_DEALS = [
       {
         deal_id: "dId1",
-        search_sort_key: constants.DB_SORTK.DEAL,
+        search_sort_key: constants.DB_SORTK.DEAL
       },
       {
         deal_id: "dId2",
-        search_sort_key: constants.DB_SORTK.NEEDS,
-      },
+        search_sort_key: constants.DB_SORTK.NEEDS
+      }
     ];
 
     const MOCK_MATCHED_DEALS = [
@@ -285,8 +1361,8 @@ describe("findNewDeals", () => {
         ownerid: "dOwnerId1",
         dealstage__c: constants.CANDIDATE_UNDECIDED,
         corp_rank__c: "A",
-        hidden__c: "false",
-      },
+        hidden__c: "false"
+      }
     ];
     const MOCK_BUYING_NEED = { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" };
 
@@ -296,7 +1372,7 @@ describe("findNewDeals", () => {
         "_Needs",
         { id: "dId1", ownerid: "dOwnerId1" },
         { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" }
-      ),
+      )
     ];
     expect(dealService.findNewDeals(MOCK_OLD_DEALS, MOCK_MATCHED_DEALS, MOCK_BUYING_NEED)).toStrictEqual(expected);
   });
@@ -305,12 +1381,12 @@ describe("findNewDeals", () => {
     const MOCK_OLD_DEALS = [
       {
         deal_id: "dId1",
-        search_sort_key: constants.DB_SORTK.DEAL,
+        search_sort_key: constants.DB_SORTK.DEAL
       },
       {
         deal_id: "dId2",
-        search_sort_key: constants.DB_SORTK.NEEDS,
-      },
+        search_sort_key: constants.DB_SORTK.NEEDS
+      }
     ];
 
     const MOCK_MATCHED_DEALS = [
@@ -319,8 +1395,8 @@ describe("findNewDeals", () => {
         ownerid: "dOwnerId1",
         dealstage__c: "dealstage__c",
         corp_rank__c: "A",
-        hidden__c: "false",
-      },
+        hidden__c: "false"
+      }
     ];
     const MOCK_BUYING_NEED = { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" };
 
@@ -331,12 +1407,12 @@ describe("findNewDeals", () => {
     const MOCK_OLD_DEALS = [
       {
         deal_id: "dId1",
-        search_sort_key: constants.DB_SORTK.DEAL,
+        search_sort_key: constants.DB_SORTK.DEAL
       },
       {
         deal_id: "dId2",
-        search_sort_key: constants.DB_SORTK.NEEDS,
-      },
+        search_sort_key: constants.DB_SORTK.NEEDS
+      }
     ];
 
     const MOCK_MATCHED_DEALS = [
@@ -345,8 +1421,8 @@ describe("findNewDeals", () => {
         ownerid: "dOwnerId1",
         dealstage__c: constants.CANDIDATE_UNDECIDED,
         corp_rank__c: "A",
-        hidden__c: "false",
-      },
+        hidden__c: "false"
+      }
     ];
     const MOCK_BUYING_NEED = { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" };
 
@@ -362,7 +1438,7 @@ describe("findNewDeals", () => {
         "_Deal",
         { id: "dId3", ownerid: "dOwnerId1" },
         { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" }
-      ),
+      )
     ];
     expect(dealService.findNewDeals(MOCK_OLD_DEALS, MOCK_MATCHED_DEALS, MOCK_BUYING_NEED)).toStrictEqual(expected);
   });
@@ -371,12 +1447,12 @@ describe("findNewDeals", () => {
     const MOCK_OLD_DEALS = [
       {
         deal_id: "dId1",
-        search_sort_key: constants.DB_SORTK.NEEDS,
+        search_sort_key: constants.DB_SORTK.NEEDS
       },
       {
         deal_id: "dId1",
-        search_sort_key: constants.DB_SORTK.DEAL,
-      },
+        search_sort_key: constants.DB_SORTK.DEAL
+      }
     ];
 
     const MOCK_MATCHED_DEALS = [
@@ -385,8 +1461,8 @@ describe("findNewDeals", () => {
         ownerid: "dOwnerId1",
         dealstage__c: "dealstage__c1",
         corp_rank__c: "corp_rank__c1",
-        hidden__c: "false",
-      },
+        hidden__c: "false"
+      }
     ];
     const MOCK_BUYING_NEED = { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" };
     expect(dealService.findNewDeals(MOCK_OLD_DEALS, MOCK_MATCHED_DEALS, MOCK_BUYING_NEED)).toStrictEqual([]);
@@ -396,12 +1472,12 @@ describe("findNewDeals", () => {
     const MOCK_OLD_DEALS = [
       {
         deal_id: "dId1",
-        search_sort_key: constants.DB_SORTK.NEEDS,
+        search_sort_key: constants.DB_SORTK.NEEDS
       },
       {
         deal_id: "dId2",
-        search_sort_key: constants.DB_SORTK.DEAL,
-      },
+        search_sort_key: constants.DB_SORTK.DEAL
+      }
     ];
     const MOCK_MATCHED_DEALS = [];
     const MOCK_BUYING_NEED = { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" };
@@ -417,8 +1493,8 @@ describe("findNewDeals", () => {
         ownerid: "dOwnerId1",
         dealstage__c: "dealstage__c1",
         corp_rank__c: "corp_rank__c1",
-        hidden__c: "false",
-      },
+        hidden__c: "false"
+      }
     ];
     const MOCK_BUYING_NEED = { id: "nId1", ownerid: "nOwnerId1", account__c: "account__c1" };
 

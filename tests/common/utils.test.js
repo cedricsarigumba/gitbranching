@@ -329,3 +329,33 @@ describe("isNonEmptyArray", () => {
     expect(utils.isNonEmptyArray(arr)).toBeFalsy();
   });
 });
+
+describe("isEmptyString", () => {
+  test("All possible combinations: should return correct boolean", () => {
+    expect(utils.isEmptyString(undefined)).toBeTruthy();
+    expect(utils.isEmptyString("")).toBeTruthy();
+    expect(utils.isEmptyString(null)).toBeTruthy();
+    expect(utils.isEmptyString("hoge")).toBeFalsy();
+    expect(utils.isEmptyString(1)).toBeFalsy();
+  });
+});
+
+describe("nonNull", () => {
+  test("All possible combinations: should return correct boolean", () => {
+    expect(utils.nonNull(null)).toBeFalsy();
+    expect(utils.nonNull(undefined)).toBeTruthy();
+    expect(utils.nonNull("")).toBeTruthy();
+    expect(utils.nonNull("hoge")).toBeTruthy();
+    expect(utils.nonNull(1)).toBeTruthy();
+  });
+});
+
+describe("isNull", () => {
+  test("All possible combinations: should return correct boolean", () => {
+    expect(utils.isNull(null)).toBeTruthy();
+    expect(utils.isNull(undefined)).toBeFalsy();
+    expect(utils.isNull("")).toBeFalsy();
+    expect(utils.isNull("hoge")).toBeFalsy();
+    expect(utils.isNull(1)).toBeFalsy();
+  });
+});
