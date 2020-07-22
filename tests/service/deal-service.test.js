@@ -852,7 +852,7 @@ describe("findMatchedDeals", () => {
       expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
     });
 
-    test("Exist boundaries (18digits): Should return the 2nd deal only", () => {
+    test("Exceed boundaries (18digits): Should return the 2nd deal only", () => {
       const testNeed = {
         ...baseNeed,
         investable_lower__c: "555555555555555555555", // 21 digit
@@ -1281,7 +1281,7 @@ describe("findMatchedDeals", () => {
       expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
     });
 
-    test("Exist boundaries (18digits): Should return the 2nd deal only", () => {
+    test("Exceed boundaries (18digits): Should return the 2nd deal only", () => {
       const testNeed = {
         ...baseNeed,
         salesscale_lower__c: "555555555555555555555", // 21 digit
