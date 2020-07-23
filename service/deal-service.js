@@ -1,3 +1,4 @@
+const Big = require("big.js");
 const constants = require("../common/constants");
 const { splitStringToArray, isElementExist, isEmptyString, stringToBool, isNull, nonNull } = require("../common/utils");
 
@@ -33,58 +34,58 @@ function filterDealsByBaseConditions(need, deals) {
 }
 
 function filterDealsByInvestments(need, deals) {
-  const investableLower = isEmptyString(need.investable_lower__c) ? null : BigInt(need.investable_lower__c);
-  const investableUpper = isEmptyString(need.investable_upper__c) ? null : BigInt(need.investable_upper__c);
+  const investableLower = isEmptyString(need.investable_lower__c) ? null : Big(need.investable_lower__c);
+  const investableUpper = isEmptyString(need.investable_upper__c) ? null : Big(need.investable_upper__c);
 
   // If need investables fields are null, then we do not need to do any filtering.
   if (isNull(investableLower) && isNull(investableUpper)) return deals;
 
   return deals.filter(deal => {
-    const askingPrice = isEmptyString(deal.askingprice__c) ? null : BigInt(deal.askingprice__c);
-    const refa = isEmptyString(deal.refa__c) ? null : BigInt(deal.refa__c);
+    const askingPrice = isEmptyString(deal.askingprice__c) ? null : Big(deal.askingprice__c);
+    const refa = isEmptyString(deal.refa__c) ? null : Big(deal.refa__c);
 
     if (isNull(askingPrice) && isNull(refa)) return false;
 
     if (nonNull(investableLower) && isNull(investableUpper)) {
       if (nonNull(askingPrice)) {
-        return investableLower <= askingPrice;
+        return investableLower.lte(askingPrice);
       } else {
-        return investableLower <= refa;
+        return investableLower.lte(refa);
       }
     } else if (isNull(investableLower) && nonNull(investableUpper)) {
       if (nonNull(askingPrice)) {
-        return askingPrice <= investableUpper;
+        return askingPrice.lte(investableUpper);
       } else {
-        return refa <= investableUpper;
+        return refa.lte(investableUpper);
       }
     } else {
       if (nonNull(askingPrice)) {
-        return investableLower <= askingPrice && askingPrice <= investableUpper;
+        return investableLower.lte(askingPrice) && askingPrice.lte(investableUpper);
       } else {
-        return investableLower <= refa && refa <= investableUpper;
+        return investableLower.lte(refa) && refa.lte(investableUpper);
       }
     }
   });
 }
 
 function filterDealsBySales(need, deals) {
-  const salesScaleLower = isEmptyString(need.salesscale_lower__c) ? null : BigInt(need.salesscale_lower__c);
-  const salesScaleUpper = isEmptyString(need.salesscale_upper__c) ? null : BigInt(need.salesscale_upper__c);
+  const salesScaleLower = isEmptyString(need.salesscale_lower__c) ? null : Big(need.salesscale_lower__c);
+  const salesScaleUpper = isEmptyString(need.salesscale_upper__c) ? null : Big(need.salesscale_upper__c);
 
   //  If need sales fields are null, then we do not need to do any filtering.
   if (isNull(salesScaleLower) && isNull(salesScaleUpper)) return deals;
 
   return deals.filter(deal => {
-    const sales = isEmptyString(deal.sales__c) ? null : BigInt(deal.sales__c);
+    const sales = isEmptyString(deal.sales__c) ? null : Big(deal.sales__c);
 
     if (isNull(sales)) return false;
 
     if (nonNull(salesScaleLower) && isNull(salesScaleUpper)) {
-      return salesScaleLower <= sales;
+      return salesScaleLower.lte(sales);
     } else if (isNull(salesScaleLower) && nonNull(salesScaleUpper)) {
-      return sales <= salesScaleUpper;
+      return sales.lte(salesScaleUpper);
     } else {
-      return salesScaleLower <= sales && sales <= salesScaleUpper;
+      return salesScaleLower.lte(sales) && sales.lte(salesScaleUpper);
     }
   });
 }

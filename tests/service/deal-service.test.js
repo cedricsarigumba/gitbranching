@@ -254,40 +254,6 @@ describe("findMatchedDeals", () => {
       expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
     });
 
-    test("All investment fields are empty: Should return the matched deals", () => {
-      const testNeed = {
-        ...baseNeed,
-        investable_lower__c: "", // null
-        investable_upper__c: "" // null
-      };
-      const testDeals = [
-        {
-          ...baseDeals,
-          askingprice__c: "100000",
-          refa__c: "200000"
-        }
-      ];
-
-      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
-    });
-
-    test("All Need investment & Deal trading price fields are empty: Should return the matched deals", () => {
-      const testNeed = {
-        ...baseNeed,
-        investable_lower__c: "", // null
-        investable_upper__c: "" // null
-      };
-      const testDeals = [
-        {
-          ...baseDeals,
-          askingprice__c: "", // null
-          refa__c: "" // null
-        }
-      ];
-
-      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
-    });
-
     test("InvestableLower <= AskingPrice: Should return the 2nd deal only", () => {
       const testNeed = {
         ...baseNeed,
@@ -321,7 +287,7 @@ describe("findMatchedDeals", () => {
     test("InvestableLower == AskingPrice: Should return the 2nd deal only", () => {
       const testNeed = {
         ...baseNeed,
-        investable_lower__c: "100000",
+        investable_lower__c: "100000.50",
         investable_upper__c: ""
       };
       const testDeals = [
@@ -332,7 +298,7 @@ describe("findMatchedDeals", () => {
         },
         {
           ...baseDeals,
-          askingprice__c: "100000", // investablelower == askingprice
+          askingprice__c: "100000.50", // investablelower == askingprice
           refa__c: "250000"
         }
       ];
@@ -340,7 +306,7 @@ describe("findMatchedDeals", () => {
       const expectedDeals = [
         {
           ...baseDeals,
-          askingprice__c: "100000",
+          askingprice__c: "100000.50",
           refa__c: "250000"
         }
       ];
@@ -404,7 +370,7 @@ describe("findMatchedDeals", () => {
     test("InvestableLower == Refa: Should return the 2nd deal only", () => {
       const testNeed = {
         ...baseNeed,
-        investable_lower__c: "100000",
+        investable_lower__c: "100000.8",
         investable_upper__c: ""
       };
       const testDeals = [
@@ -416,7 +382,7 @@ describe("findMatchedDeals", () => {
         {
           ...baseDeals,
           askingprice__c: "",
-          refa__c: "100000" // InvestableLower == Refa
+          refa__c: "100000.8" // InvestableLower == Refa
         }
       ];
 
@@ -424,7 +390,7 @@ describe("findMatchedDeals", () => {
         {
           ...baseDeals,
           askingprice__c: "",
-          refa__c: "100000"
+          refa__c: "100000.8"
         }
       ];
 
@@ -886,6 +852,94 @@ describe("findMatchedDeals", () => {
       expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
     });
 
+    test("Exceed boundaries (18digits): Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "555555555555555555555", // 21 digit
+        investable_upper__c: "999999999999999999999" //21 digit
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "700000" // does not match investable thresholds
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "888888888888888888888"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "888888888888888888888"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("Values contains decimal: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "154252419.4",
+        investable_upper__c: "954252419.4"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "700000.55" // does not match investable thresholds
+        },
+        {
+          ...baseDeals,
+          askingprice__c: "854252419.5" // matched
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "854252419.5"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("All investment fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "", // null
+        investable_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "100000",
+          refa__c: "200000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
+    });
+
+    test("All Need investment & Deal trading price fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        investable_lower__c: "", // null
+        investable_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          askingprice__c: "", // null
+          refa__c: "" // null
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
+    });
+
     test("Null AskingPrice & Refa: Should return empty deals", () => {
       const testNeed = {
         ...baseNeed,
@@ -952,38 +1006,6 @@ describe("findMatchedDeals", () => {
       ];
 
       expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
-    });
-
-    test("All sales fields are empty: Should return the matched deals", () => {
-      const testNeed = {
-        ...baseNeed,
-        salesscale_lower__c: "", // null
-        salesscale_upper__c: "" // null
-      };
-      const testDeals = [
-        {
-          ...baseDeals,
-          sales__c: "300000"
-        }
-      ];
-
-      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
-    });
-
-    test("All Need & Deal sales fields are empty: Should return the matched deals", () => {
-      const testNeed = {
-        ...baseNeed,
-        salesscale_lower__c: "", // null
-        salesscale_upper__c: "" // null
-      };
-      const testDeals = [
-        {
-          ...baseDeals,
-          sales__c: "" // null
-        }
-      ];
-
-      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
     });
 
     test("SalesScaleLower <= Sales: Should return the 2nd deal only", () => {
@@ -1257,6 +1279,92 @@ describe("findMatchedDeals", () => {
 
       const expectedDeals = [];
       expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("Exceed boundaries (18digits): Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "555555555555555555555", // 21 digit
+        salesscale_upper__c: "999999999999999999999" //21 digit
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "700000" // does not match investable thresholds
+        },
+        {
+          ...baseDeals,
+          sales__c: "888888888888888888888"
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          sales__c: "888888888888888888888"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("Values contains decimal: Should return the 2nd deal only", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "154252419.4",
+        salesscale_upper__c: "954252419.4"
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "700000.55" // does not match investable thresholds
+        },
+        {
+          ...baseDeals,
+          sales__c: "854252419.5" // matched
+        }
+      ];
+
+      const expectedDeals = [
+        {
+          ...baseDeals,
+          sales__c: "854252419.5"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(expectedDeals);
+    });
+
+    test("All sales fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "", // null
+        salesscale_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "300000"
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
+    });
+
+    test("All Need & Deal sales fields are empty: Should return the matched deals", () => {
+      const testNeed = {
+        ...baseNeed,
+        salesscale_lower__c: "", // null
+        salesscale_upper__c: "" // null
+      };
+      const testDeals = [
+        {
+          ...baseDeals,
+          sales__c: "" // null
+        }
+      ];
+
+      expect(dealService.findMatchedDeals(testNeed, testDeals)).toStrictEqual(testDeals);
     });
 
     test("Null Sales: Should return empty deals", () => {
